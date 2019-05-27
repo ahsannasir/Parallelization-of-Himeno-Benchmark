@@ -12,6 +12,16 @@ WORKDIR /usr/bin/mopp-2018-t3-himeno
 COPY cds_server.json /etc/
 RUN make 
 
+# Running mandelbrot set
+
+#RUN apt-get install gcc && apt-get install make
+RUN mkdir /usr/bin/mopp-2017-t3-mandelbrot-set
+ADD ./mopp-2017-t3-mandelbrot-set /usr/bin/mopp-2017-t3-mandelbrot-set
+WORKDIR /usr/bin/mopp-2017-t3-mandelbrot-set
+#COPY cds_server.json /etc/
+RUN make 
+
+
 #CMD ["./harmonic-progression-sum"]
 
 
