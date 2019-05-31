@@ -2,5 +2,5 @@
     ["echo", "/bin/cat"],
     ["mopp-2018-t0-harmonic-progression-sum", "/usr/bin/mopp-2018-t0-harmonic-progression-sum/harmonic-progression-sum"],
     ["mopp-2018-t3-himeno", "/usr/bin/mopp-2018-t3-himeno/himeno"],
-    ["mopp-2017-t3-mandelbrot-set", "/usr/bin/mopp-2017-t3-mandelbrot-set/mandelbrot-set"]
+    ["mopp-2017-t3-mandelbrot-set", "/usr/bin/mopp-2017-t3-mandelbrot-set/mandelbrot"]
 ]
