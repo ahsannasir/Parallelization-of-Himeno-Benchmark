@@ -59,11 +59,11 @@ void partJcob(void *x);
 float   omega=0.8;
 Matrix  a,b,c,p,bnd,wrk1,wrk2;
   float  gosa,s0,ss;
-  int noOfThreads = 4;
+  int noOfThreads = 0;
 int step = 0;
 int    imax,jmax,kmax;
   // pthread_t threads[noOfThreads];
-
+  float gosaFinal = 0.0;
 int
 main(int argc, char *argv[])
 {
@@ -71,14 +71,14 @@ main(int argc, char *argv[])
   int    mimax,mjmax,mkmax,msize[3];
   
 
-  //scanf("%d", &msize[0]);
-  //scanf("%d", &msize[1]);
-  //scanf("%d", &msize[2]);
-  //scanf("%d", &nn);
-  msize[0] = 64;
-  msize[1] = 64;
-  msize[2] = 128;
-  nn = 10;
+  scanf("%d", &msize[0]);
+  scanf("%d", &msize[1]);
+  scanf("%d", &msize[2]);
+  scanf("%d", &nn);
+ // msize[0] = 64;
+ // msize[1] = 64;
+ // msize[2] = 128;
+ // nn = 10;
   mimax= msize[0];
   mjmax= msize[1];
   mkmax= msize[2];
@@ -86,6 +86,12 @@ main(int argc, char *argv[])
   jmax= mjmax-1;
   kmax= mkmax-1;
 
+     noOfThreads = get_nprocs();
+    // nprocs() might return wrong amount inside of a container.
+    // Use MAX_CPUS instead, if available.
+    if (getenv("MAX_CPUS")) {
+        noOfThreads = atoi(getenv("MAX_CPUS"));
+    }
   /*
    *    Initializing matrixes
    */
@@ -117,7 +123,7 @@ main(int argc, char *argv[])
    */
   jacobi(nn);
 
-  printf("%.6f\n",gosa);
+  printf("%.6f\n",gosaFinal);
 
   /*
    *   Matrix free
@@ -151,7 +157,7 @@ typedef struct JacobArgs struct1;
 float
 jacobi(int nn)
 {
-  printf("came her boi");
+ // printf("came her boi");
  int n,i,j,k;
  
  struct1 *x;
@@ -164,7 +170,7 @@ jacobi(int nn)
  x->M6 = wrk1;
  x->M7 = wrk2;
  
-  printf("came her boi2");
+ // printf("came her boi2");
  //imax= p->mrows-1;
   //jmax= p->mcols-1;
   //kmax= p->mdeps-1;
@@ -173,7 +179,7 @@ jacobi(int nn)
     gosa = 0.0;
  pthread_t threads[noOfThreads];
 step = 0;
- printf("i have %d threads", noOfThreads);
+// printf("i have %d threads", noOfThreads);
   for (int th = 0; th < noOfThreads ; th++ ) {
       pthread_create(&threads[th], NULL, partialJacob, (void*)(x));
   }
@@ -189,7 +195,7 @@ for (int tj = 0; tj < noOfThreads; tj++)
 }
 
 void* tempthread() {
-   printf("\n\n\ni am threaded");
+  // printf("\n\n\ni am threaded");
 }
 void partJcob(void *x) {
   
@@ -231,15 +237,16 @@ y=(struct1*) x;
     wrk2 = &(y->M7);
          
   int i,j,k;
-  printf("came here");
+ // printf("came here");
 
   int core = step++;
   int ii = 0;
+
    for(ii= (core * imax) / noOfThreads ; ii <= (core + 1) * imax / noOfThreads; ii++)
   // for (i=1;i<imax;i++) 
       {
         i = (ii + 1);
-        printf("\ni am a threaded bouy with i: %d, my core is: %d my imax is %d my step is %d\n\n", i,core,imax,step);
+    //   printf("\ni am a threaded bouy with i: %d, my core is: %d my imax is %d my step is %d\n\n", i,core,imax,step);
         if ( i > (imax - 1)) {
           break;
         }
@@ -267,13 +274,14 @@ y=(struct1*) x;
           ss= (s0*MR(a,3,i,j,k) - MR(p,0,i,j,k))*MR(bnd,0,i,j,k);
 
           gosa+= ss*ss;
-          printf("\n%f", gosa);
+         // printf("\n%f", gosa);
           MR(wrk2,0,i,j,k)= MR(p,0,i,j,k) + omega*ss;
 
           // checktimes++;
      //     printf("\nnexecuted %f times\n", gosa);
         }
       }
+      gosaFinal = gosa + gosaFinal;
       }
 
 
