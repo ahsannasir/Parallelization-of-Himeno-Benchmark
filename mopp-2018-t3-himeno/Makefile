@@ -6,8 +6,8 @@ EXEC=himeno
 all: $(EXEC)
 
 $(EXEC):
-	$(CC) $(CFLAGS) $(EXEC).c -c -o $(EXEC).o
-	$(CC) $(CFLAGS) $(EXEC).o -o $(EXEC)
+	$(CC) $(CFLAGS) $(EXEC).c -c -o $(EXEC).o -pthread
+	$(CC) $(CFLAGS) $(EXEC).o -o $(EXEC) -pthread
 
 run:
 	./$(EXEC)

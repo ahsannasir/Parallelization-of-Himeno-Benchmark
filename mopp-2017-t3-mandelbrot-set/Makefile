@@ -1,13 +1,11 @@
+FLAGS=-O3 -std=c++11
 
-CXXFLAGS=-O3 -std=c++11 -Wall -lpthread 
 RM=rm -f
-EXEC=mandelbrot
 
-all: $(EXEC)
+all: mandelbrot-set
 
-$(EXEC):
-	$(CXX) $(CXXFLAGS) $(EXEC).cpp -c -o $(EXEC).o
-	$(CXX) $(CXXFLAGS) $(EXEC).o -o $(EXEC)
+mandelbrot-set:
+	$(CXX) $(FLAGS) mandelbrot.cpp -o mandelbrot-set -lpthread
 
 clean:
-	$(RM) $(EXEC).o $(EXEC)
+	$(RM) mandelbrot-set
