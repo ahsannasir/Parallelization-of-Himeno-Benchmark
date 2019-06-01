@@ -46,179 +46,30 @@ struct Mat {
 /* prototypes */
 typedef struct Mat Matrix;
 
+struct thread_work_t{
+    long unsigned start_n;
+    long unsigned end_n;
+    long unsigned thread_num;
+};
+
 int newMat(Matrix* Mat, int mnums, int mrows, int mcols, int mdeps);
 void clearMat(Matrix* Mat);
 void mat_set(Matrix* Mat,int l,float z);
 void mat_set_init(Matrix* Mat);
-float jacobi(int n);
-void* tempthread();
-void* partialJacob(void* x);
-void partJcob(void *x);
+void* jacobi(void *thread_work_uncasted);
+
+Matrix  a1,b1,c1,p1,bnd1,wrk11,wrk21;
 
 
+// Shared variables for the THREADS
+
+float  gosa;
+int imax,jmax,kmax;
+int nn; 
 float   omega=0.8;
-Matrix  a,b,c,p,bnd,wrk1,wrk2;
-  float  gosa,s0,ss;
-  int noOfThreads = 0;
-int step = 0;
-int    imax,jmax,kmax;
-  // pthread_t threads[noOfThreads];
-  float gosaFinal = 0.0;
-int
-main(int argc, char *argv[])
-{
-  int    nn;
-  int    mimax,mjmax,mkmax,msize[3];
-  
+int CPUs = 1;
 
-  scanf("%d", &msize[0]);
-  scanf("%d", &msize[1]);
-  scanf("%d", &msize[2]);
-  scanf("%d", &nn);
- // msize[0] = 64;
- // msize[1] = 64;
- // msize[2] = 128;
- // nn = 10;
-  mimax= msize[0];
-  mjmax= msize[1];
-  mkmax= msize[2];
-  imax= mimax-1;
-  jmax= mjmax-1;
-  kmax= mkmax-1;
-
-     noOfThreads = get_nprocs();
-    // nprocs() might return wrong amount inside of a container.
-    // Use MAX_CPUS instead, if available.
-    if (getenv("MAX_CPUS")) {
-        noOfThreads = atoi(getenv("MAX_CPUS"));
-    }
-  /*
-   *    Initializing matrixes
-   */
-  newMat(&p,1,mimax,mjmax,mkmax);
-  newMat(&bnd,1,mimax,mjmax,mkmax);
-  newMat(&wrk1,1,mimax,mjmax,mkmax);
-  newMat(&wrk2,1,mimax,mjmax,mkmax);
-  newMat(&a,4,mimax,mjmax,mkmax);
-  newMat(&b,3,mimax,mjmax,mkmax);
-  newMat(&c,3,mimax,mjmax,mkmax);
-
-  mat_set_init(&p);
-  mat_set(&bnd,0,1.0);
-  mat_set(&wrk1,0,0.0);
-  mat_set(&wrk2,0,0.0);
-  mat_set(&a,0,1.0);
-  mat_set(&a,1,1.0);
-  mat_set(&a,2,1.0);
-  mat_set(&a,3,1.0/6.0);
-  mat_set(&b,0,0.0);
-  mat_set(&b,1,0.0);
-  mat_set(&b,2,0.0);
-  mat_set(&c,0,1.0);
-  mat_set(&c,1,1.0);
-  mat_set(&c,2,1.0);
-
-  /*
-   *    Start measuring
-   */
-  jacobi(nn);
-
-  printf("%.6f\n",gosaFinal);
-
-  /*
-   *   Matrix free
-   */ 
-  clearMat(&p);
-  clearMat(&bnd);
-  clearMat(&wrk1);
-  clearMat(&wrk2);
-  clearMat(&a);
-  clearMat(&b);
-  clearMat(&c);
-  
-  return (0);
-}
-
-
-struct JacobArgs {
-  Matrix M1;
-  Matrix M2;
-  Matrix M3;
-  Matrix M4;
-  Matrix M5;
-  Matrix M6;
-  Matrix M7;
-
-};
-
-
-typedef struct JacobArgs struct1;
-
-float
-jacobi(int nn)
-{
- // printf("came her boi");
- int n,i,j,k;
- 
- struct1 *x;
- x=(struct1 *)malloc(sizeof(struct1));
- x->M1 = a;
- x->M2 = b;
- x->M3 = c;
- x->M4 = p;
- x->M5 = bnd;
- x->M6 = wrk1;
- x->M7 = wrk2;
- 
- // printf("came her boi2");
- //imax= p->mrows-1;
-  //jmax= p->mcols-1;
-  //kmax= p->mdeps-1;
-      	
-  //for(n=0 ; n<nn ; n++){
-    gosa = 0.0;
- pthread_t threads[noOfThreads];
-step = 0;
-// printf("i have %d threads", noOfThreads);
-  for (int th = 0; th < noOfThreads ; th++ ) {
-      pthread_create(&threads[th], NULL, partialJacob, (void*)(x));
-  }
-for (int tj = 0; tj < noOfThreads; tj++)
-     {	pthread_join(threads[tj], NULL); }
-
- 
-      partJcob(x);
-    
-   //} /* end n loop */
-  //printf("optimized gosa: %f", gosa);
-  return(gosa);
-}
-
-void* tempthread() {
-  // printf("\n\n\ni am threaded");
-}
-void partJcob(void *x) {
-  
-Matrix* p;
-
-Matrix* wrk2;
-
-struct1 *y;
-y=(struct1*) x;
-  p = &(y->M4);
-wrk2 = &(y->M7);
-
-int i,j,k;
-     for(i=1 ; i<imax ; i++)
-      for(j=1 ; j<jmax ; j++)
-        for(k=1 ; k<kmax ; k++)
-          MR(p,0,i,j,k)= MR(wrk2,0,i,j,k);
-
-
-}
-void* partialJacob( void* x ) {
-
-Matrix* a; 
+Matrix* a;
 Matrix* b;
 Matrix* c;
 Matrix* p;
@@ -226,68 +77,113 @@ Matrix* bnd;
 Matrix* wrk1;
 Matrix* wrk2;
 
-struct1 *y;
-y=(struct1*) x;
-    a = &(y->M1);
-    b = &(y->M2);
-    c = &(y->M3);
-    p = &(y->M4);
-    bnd = &(y->M5);
-    wrk1 = &(y->M6);
-    wrk2 = &(y->M7);
-         
-  int i,j,k;
- // printf("came here");
+pthread_barrier_t barrier1;
+pthread_mutex_t lock;
 
-  int core = step++;
-  int ii = 0;
+int
+main(int argc, char *argv[])
+{
+ // int    nn;
+  int    mimax,mjmax,mkmax,msize[3];
+  
 
-   for(ii= (core * imax) / noOfThreads ; ii <= (core + 1) * imax / noOfThreads; ii++)
-  // for (i=1;i<imax;i++) 
-      {
-        i = (ii + 1);
-    //   printf("\ni am a threaded bouy with i: %d, my core is: %d my imax is %d my step is %d\n\n", i,core,imax,step);
-        if ( i > (imax - 1)) {
-          break;
-        }
-        for(j=1 ; j<jmax ; j++) {
+  scanf("%d", &msize[0]);
+  scanf("%d", &msize[1]);
+  scanf("%d", &msize[2]);
+  scanf("%d", &nn);
+  
+  mimax= msize[0];
+  mjmax= msize[1];
+  mkmax= msize[2];
+  imax= mimax-1;
+  jmax= mjmax-1;
+  kmax= mkmax-1;
 
-        for(k=1 ; k<kmax ; k++){
-    //  printf("that was some fast ass shit");
-          s0= MR(a,0,i,j,k)*MR(p,0,i+1,j,  k)
-            + MR(a,1,i,j,k)*MR(p,0,i,  j+1,k)
-            + MR(a,2,i,j,k)*MR(p,0,i,  j,  k+1)
-            + MR(b,0,i,j,k)
-             *( MR(p,0,i+1,j+1,k) - MR(p,0,i+1,j-1,k)
-              - MR(p,0,i-1,j+1,k) + MR(p,0,i-1,j-1,k) )
-            + MR(b,1,i,j,k)
-             *( MR(p,0,i,j+1,k+1) - MR(p,0,i,j-1,k+1)
-              - MR(p,0,i,j+1,k-1) + MR(p,0,i,j-1,k-1) )
-            + MR(b,2,i,j,k)
-             *( MR(p,0,i+1,j,k+1) - MR(p,0,i-1,j,k+1)
-              - MR(p,0,i+1,j,k-1) + MR(p,0,i-1,j,k-1) )
-            + MR(c,0,i,j,k) * MR(p,0,i-1,j,  k)
-            + MR(c,1,i,j,k) * MR(p,0,i,  j-1,k)
-            + MR(c,2,i,j,k) * MR(p,0,i,  j,  k-1)
-            + MR(wrk1,0,i,j,k);
+  /*
+   *    Initializing matrixes
+   */
+  newMat(&p1,1,mimax,mjmax,mkmax);
+  newMat(&bnd1,1,mimax,mjmax,mkmax);
+  newMat(&wrk11,1,mimax,mjmax,mkmax);
+  newMat(&wrk21,1,mimax,mjmax,mkmax);
+  newMat(&a1,4,mimax,mjmax,mkmax);
+  newMat(&b1,3,mimax,mjmax,mkmax);
+  newMat(&c1,3,mimax,mjmax,mkmax);
 
-          ss= (s0*MR(a,3,i,j,k) - MR(p,0,i,j,k))*MR(bnd,0,i,j,k);
+  mat_set_init(&p1);
+  mat_set(&bnd1,0,1.0);
+  mat_set(&wrk11,0,0.0);
+  mat_set(&wrk21,0,0.0);
+  mat_set(&a1,0,1.0);
+  mat_set(&a1,1,1.0);
+  mat_set(&a1,2,1.0);
+  mat_set(&a1,3,1.0/6.0);
+  mat_set(&b1,0,0.0);
+  mat_set(&b1,1,0.0);
+  mat_set(&b1,2,0.0);
+  mat_set(&c1,0,1.0);
+  mat_set(&c1,1,1.0);
+  mat_set(&c1,2,1.0);
 
-          gosa+= ss*ss;
-         // printf("\n%f", gosa);
-          MR(wrk2,0,i,j,k)= MR(p,0,i,j,k) + omega*ss;
+  /*
+   *    Start measuring
+   */
+  a = &a1;
+  b = &b1;
+  c = &c1;
+  bnd = &bnd1;
+  wrk1 = &wrk11;
+  wrk2 = &wrk21;
+  p = &p1;
 
-          // checktimes++;
-     //     printf("\nnexecuted %f times\n", gosa);
-        }
-      }
-      gosaFinal = gosa + gosaFinal;
-      }
+  CPUs = get_nprocs();
+    // nprocs() might return wrong amount inside of a container.
+    // Use MAX_CPUS instead, if available.
+  if (getenv("MAX_CPUS")) 
+   {
+    CPUs = atoi(getenv("MAX_CPUS"));
+   }
+   // we're going to parallelize this section first.
 
+ // CPUs = 1;
+  pthread_t threads[CPUs];
+  struct thread_work_t tw[CPUs];
+  //CPUs = 7;
+ imax= p->mrows-1;
+  jmax= p->mcols-1;
+  kmax= p->mdeps-1;
+  pthread_barrier_init(&barrier1,NULL,CPUs);
 
-
+   pthread_mutex_init(&lock, NULL);
+  for (int i=0; i<CPUs; i++) {
+    
+    tw[i].start_n = ((imax)/CPUs)* i + 1;
+    tw[i].end_n   = ((imax)/CPUs)*(i+1);
+    tw[i].thread_num = i;
+    // create a thread
+   // printf("%d\n", tw[i].thread_num);
+    pthread_create(&threads[i], NULL, jacobi, (void*)&tw[i]);
+  }
+  //gosa = jacobi();
+   for (int i=0; i<CPUs; i++) {
+        // wait for all threads
+        pthread_join(threads[i], NULL);
+   }
+  printf("%.6f\n",gosa);
+   pthread_mutex_destroy(&lock);
+  /*
+   *   Matrix free
+   */ 
+  clearMat(&p1);
+  clearMat(&bnd1);
+  clearMat(&wrk11);
+  clearMat(&wrk21);
+  clearMat(&a1);
+  clearMat(&b1);
+  clearMat(&c1);
+  
+  return (0);
 }
-
 
 int
 newMat(Matrix* Mat, int mnums,int mrows, int mcols, int mdeps)
@@ -337,3 +233,79 @@ mat_set_init(Matrix* Mat)
         MR(Mat,0,i,j,k)= (float)(i*i)
           /(float)((Mat->mrows - 1)*(Mat->mrows - 1));
 }
+
+void* 
+jacobi(void *thread_work_uncasted)
+{
+  int    i,j,k,n;
+  float  gosa1,s0,ss;
+  
+  // the stucture
+  struct thread_work_t *thread_work = (struct thread_work_t*)thread_work_uncasted;
+  const long unsigned int start = thread_work->start_n;
+  const long unsigned int end = thread_work->end_n;
+  const long unsigned int thread_num = thread_work->thread_num;
+ 
+ 
+
+   printf("\nStart: %d", start);
+   printf("\nEnd: %d", end);
+   printf("\nTHread: %d", thread_num);
+
+  for(n=0 ; n<nn ; n++){
+    // put a barrier so all threads wait here
+    pthread_barrier_wait(&barrier1);
+  //  printf("\nstarting a new iteration.\n");
+    // master thread
+    if (thread_num == 0) {
+        gosa = 0.0;
+    //  printf("it came here multiple times");
+    }
+    gosa1 = 0.0;
+
+    for(i=start ; i<end; ++i)
+      // printf("\ni: %d threadnum: %d", i, thread_num);
+      for(j=1 ; j<jmax ; j++)
+        for(k=1 ; k<kmax ; k++){
+          s0= MR(a,0,i,j,k)*MR(p,0,i+1,j,  k)
+            + MR(a,1,i,j,k)*MR(p,0,i,  j+1,k)
+            + MR(a,2,i,j,k)*MR(p,0,i,  j,  k+1)
+            + MR(b,0,i,j,k)
+             *( MR(p,0,i+1,j+1,k) - MR(p,0,i+1,j-1,k)
+              - MR(p,0,i-1,j+1,k) + MR(p,0,i-1,j-1,k) )
+            + MR(b,1,i,j,k)
+             *( MR(p,0,i,j+1,k+1) - MR(p,0,i,j-1,k+1)
+              - MR(p,0,i,j+1,k-1) + MR(p,0,i,j-1,k-1) )
+            + MR(b,2,i,j,k)
+             *( MR(p,0,i+1,j,k+1) - MR(p,0,i-1,j,k+1)
+              - MR(p,0,i+1,j,k-1) + MR(p,0,i-1,j,k-1) )
+            + MR(c,0,i,j,k) * MR(p,0,i-1,j,  k)
+            + MR(c,1,i,j,k) * MR(p,0,i,  j-1,k)
+            + MR(c,2,i,j,k) * MR(p,0,i,  j,  k-1)
+            + MR(wrk1,0,i,j,k);
+
+          ss= (s0*MR(a,3,i,j,k) - MR(p,0,i,j,k))*MR(bnd,0,i,j,k);
+
+          gosa1+= ss*ss;
+         // if (gosa1 >= 0) {
+        //     printf("\n Caught it: here i is %d, n is %d, j is %d, k is %d, threadnum is %d and gosa is %f",i,n,j,k,thread_num, gosa1);
+         
+        //  }
+          
+          MR(wrk2,0,i,j,k)= MR(p,0,i,j,k) + omega*ss;
+        }
+pthread_barrier_wait(&barrier1);
+    for(i=start ; i<end ; i++)
+      for(j=1 ; j<jmax ; j++)
+        for(k=1 ; k<kmax ; k++)
+          MR(p,0,i,j,k)= MR(wrk2,0,i,j,k);
+    
+  } /* end n loop */
+  //  Critical Section
+  pthread_mutex_lock(&lock);
+     gosa += gosa1;
+  pthread_mutex_unlock(&lock);
+ //  printf("yo wassup? my threads gosa is: %f", gosa);
+  //return(gosa);
+}
+
