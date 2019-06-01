@@ -8,4 +8,4 @@ mandelbrot:
 	$(CXX) $(FLAGS) mandelbrot.cpp -o mandelbrot -pthread
 
 clean:
-	$(RM) mandelbrot-
+	$(RM) mandelbrot
