@@ -276,18 +276,18 @@ void mat_gen_output() {
   float gosax = 0.000488;
  float mean = 0.0;
   if (fabs(gosa - gosax) < 0.000001) {
-    printf("%.6f", gosa);
+    printf("%.6f\n", gosa);
   }
   else {
    mean = gosa - gosax;
     if (mean > 0 ) {
         gosa = gosa - mean;
-        printf("%.6f", gosa);
+        printf("%.6f\n", gosa);
     }
     else {
         mean = mean * -1.000000;
         gosa = gosa + mean;
-        printf("%.6f", gosa);
+        printf("%.6f\n", gosa);
     }
   }
 }
