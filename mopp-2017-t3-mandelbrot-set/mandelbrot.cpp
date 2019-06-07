@@ -7,8 +7,8 @@
 
 using namespace std;
 int max_row, max_column, max_n;
-char** mat;
 
+char* mat;
 typedef struct
 {
   int from, to;
@@ -29,7 +29,7 @@ void* fillMatrix(void* arg)
 					(float)c * 2 / max_column - 1.5,
 					(float)r * 2 / max_row - 1
 				);
-			mat[r][c] = (n == max_n ? '#' : '.');
+			mat[(r * (max_column)) + c] = (n == max_n ? '#' : '.');
 		}
 	}
 
@@ -52,10 +52,10 @@ int main(){
 	pthread_t td[cpus]; //create array of threads
   ThreadData range[cpus];
 	//Initialize matrix
-	mat = (char**) calloc(max_row, sizeof(char*));
+	mat = (char*) calloc((max_row * max_column), sizeof(char*));
 
-	for (int i = 0; i < max_row; i++)
-		mat[i] = (char*) calloc(max_column, sizeof(char));
+	//for (int i = 0; i < max_row; i++)
+//		mat[i] = (char*) calloc(max_column, sizeof(char));
 
   int loopSize = (max_row + cpus) / cpus;
 
@@ -80,7 +80,7 @@ int main(){
   //print Matrix
 	for(int r = 0; r < max_row; ++r) {
 		for(int c = 0; c < max_column; ++c)
-			cout << mat[r][c];
+			cout << mat[(r * max_column) + c];
 		cout << '\n';
 	}
 }
