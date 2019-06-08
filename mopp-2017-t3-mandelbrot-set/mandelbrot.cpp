@@ -14,7 +14,8 @@ typedef struct
   int from, to;
 } ThreadData;
 int cpus;
-
+complex <float> z;
+int n = 0;
 
 void* fillMatrix(void* arg)
 {
@@ -22,10 +23,10 @@ void* fillMatrix(void* arg)
 
 	for(int r = range->from; r < range->to; ++r) {
 		for(int c = 0; c < max_column; ++c) {
-			complex <float> z;
-			int n = 0;
-			while(abs(z) < 2 && ++n < max_n)
-				z = pow(z, 2) + decltype(z)(
+			z = 0;
+			n = 0;
+			while( ((z.real() * z.real()) + (z.imag() * z.imag())) < 2 && ++n < max_n)
+				z = z * z + decltype(z)(
 					(float)c * 2 / max_column - 1.5,
 					(float)r * 2 / max_row - 1
 				);
