@@ -17,7 +17,7 @@ int main(){
 	for(int r = 0; r < max_row; ++r){
 		for(int c = 0; c < max_column; ++c){
 		z = 0; n = 0;
-			while(((z.real() * z.real()) + (z.imag() * z.imag()) < 4  && ++n < max_n)
+			while(((z.real() * z.real()) + (z.imag() * z.imag())) < 4  && ++n < max_n)
 				z = (z * z) + decltype(z)(
 					(float)c * 2 / max_column - 1.5,
 					(float)r * 2 / max_row - 1
