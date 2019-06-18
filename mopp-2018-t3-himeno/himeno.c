@@ -168,11 +168,11 @@ main(int argc, char *argv[])
     // create a thread
    // printf("%d\n", tw[i].thread_num);
 
-   //if (i == (CPUs - 1)) {
-   //    tw[i].start_n = (imax/(CPUs-1)) * (CPUs -1) + 1;
-   // tw[i].end_n   = imax;
-   // tw[i].thread_num = i;
-   //}
+    if (i == (CPUs - 1)) {
+       if ( (imax - tw[i].end_n) > 0 ) {
+         tw[i].end_n = imax;
+       }
+    }
     pthread_create(&threads[i], NULL, jacobi, (void*)&tw[i]);
   }
 // pthread_barrier_wait(&barrier1);
