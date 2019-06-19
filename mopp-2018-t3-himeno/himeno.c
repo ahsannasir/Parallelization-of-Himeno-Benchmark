@@ -199,7 +199,7 @@ main(int argc, char *argv[])
      /// printf("gonna take main th");
     // jacobi((void*)&maintw);
      pthread_t mainth;
-     pthread_create(&mainth, NULL, jacobi, (void*)&maintw);
+    // pthread_create(&mainth, NULL, jacobi, (void*)&maintw);
     
    }
 
@@ -213,7 +213,7 @@ main(int argc, char *argv[])
   } else
    {
     // printf("came here 22");
-     pthread_join(mainth, NULL);
+     //pthread_join(mainth, NULL);
    
    }
      
