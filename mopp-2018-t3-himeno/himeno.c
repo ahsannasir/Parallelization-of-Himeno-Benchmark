@@ -157,7 +157,7 @@ jacobi(void *thread_work_uncasted)
      gosa += gosa1;
   pthread_mutex_unlock(&lock);
 }
-
+}
 int
 main(int argc, char *argv[])
 {
