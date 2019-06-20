@@ -97,18 +97,18 @@ jacobi(void *thread_work_uncasted)
   for(n=0 ; n<nn ; n++){
     // put a barrier so all threads wait here
    if (thread_num != 100) {
-   
     pthread_barrier_wait(&barrier1);
    }
-     
+     // only master thread should perform the gosa initialization once
     if (thread_num == 0) {
         gosa = 0.0;
     }
-    gosa1 = 0.0;
+// temporary gosa 
+gosa1 = 0.0;
 
     for(i=start ; i<=end; i++) {
        
-   if  (i == (imax)) {
+   if  (i == (imax)) { // since we run all iterations except the last one
          break;
      }
       for(j=1 ; j<jmax ; j++) {
@@ -136,11 +136,10 @@ jacobi(void *thread_work_uncasted)
           gosa1+= ss*ss;
         
           MR(wrk2,0,i,j,k)= MR(p,0,i,j,k) + omega*ss;
-          //printf("\n%f", gosa1);
         }
       }
     } 
-     if (thread_num != 100) {
+     if (thread_num != 100) { // barrier so wrk2 is fully computed
    
     pthread_barrier_wait(&barrier1);
    }
@@ -153,6 +152,8 @@ jacobi(void *thread_work_uncasted)
         for(k=1 ; k<kmax ; k++) { 
           MR(p,0,i,j,k)= MR(wrk2,0,i,j,k);
         }}}
+
+// Critical section
   pthread_mutex_lock(&lock);
      gosa += gosa1;
   pthread_mutex_unlock(&lock);
