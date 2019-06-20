@@ -249,7 +249,7 @@ main(int argc, char *argv[])
     pthread_t mainth;
     maintw.start_n = (imax/CPUs) * CPUs + 1;
     maintw.end_n   = imax;
-    maintw.thread_num = 100;
+    maintw.thread_num = 100; // assign it main thread number 
   if (maintw.start_n >= maintw.end_n) {
    
   } else
