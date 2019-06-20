@@ -255,7 +255,7 @@ main(int argc, char *argv[])
   } else
    {
      pthread_t mainth;
-     pthread_create(&mainth, NULL, jacobi, (void*)&maintw);
+//     pthread_create(&mainth, NULL, jacobi, (void*)&maintw);
    }
     for (int i=0; i<CPUs; i++) {
         pthread_join(threads[i], NULL);
@@ -263,7 +263,7 @@ main(int argc, char *argv[])
   if (maintw.start_n >= maintw.end_n) {
   } else
    {
-     pthread_join(mainth, NULL);
+  //   pthread_join(mainth, NULL);
    }
      
   mat_gen_output();
